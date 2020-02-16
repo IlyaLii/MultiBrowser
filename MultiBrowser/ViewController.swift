@@ -10,7 +10,7 @@ import UIKit
 import WebKit
 
 class ViewController: UIViewController {
-
+    
     weak var activeWebView: WKWebView?
     @IBOutlet weak var textField: UITextField!
     @IBOutlet weak var stackView: UIStackView!
@@ -22,7 +22,7 @@ class ViewController: UIViewController {
         let delete = UIBarButtonItem(barButtonSystemItem: .trash, target: self, action: #selector(deleteWebView))
         navigationItem.rightBarButtonItems = [delete, add]
     }
-
+    
     //MARK: func
     func setDefaultTitle() {
         title = "MultiBrowser"
@@ -32,7 +32,6 @@ class ViewController: UIViewController {
         for view in stackView.arrangedSubviews {
             view.layer.borderWidth = 0
         }
-
         activeWebView = webView
         webView.layer.borderWidth = 3
     }
@@ -49,14 +48,34 @@ class ViewController: UIViewController {
         
         webView.layer.borderColor = UIColor.black.cgColor
         selectWebView(webView)
-
+        
         let recognizer = UITapGestureRecognizer(target: self, action: #selector(webViewTapped))
         recognizer.delegate = self
         webView.addGestureRecognizer(recognizer)
     }
     
     @objc func deleteWebView() {
-    
+        if let webView = activeWebView {
+            if let index = stackView.arrangedSubviews.firstIndex(of: webView) {
+                webView.removeFromSuperview()
+                
+                if stackView.arrangedSubviews.count == 0 {
+                    setDefaultTitle()
+                } else {
+                    var currentIndex = Int(index)
+                    
+                    if currentIndex == stackView.arrangedSubviews.count {
+                        currentIndex = stackView.arrangedSubviews.count - 1
+                    }
+                    
+                    if let newSelectedWebView = stackView.arrangedSubviews[currentIndex] as? WKWebView {
+                        selectWebView(newSelectedWebView)
+                    }
+                }
+                
+            }
+        }
+        
         
     }
     
@@ -75,11 +94,16 @@ extension ViewController: WKNavigationDelegate, UITextFieldDelegate, UIGestureRe
     //MARK: UITextFieldDelegate
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         if let webView = activeWebView, let address = textField.text {
-            if let url = URL(string: "https://\(address)/") {
+            if let url = URL(string: address) {
                 webView.load(URLRequest(url: url))
             }
         }
         textField.resignFirstResponder()
         return true
+    }
+    //MARK: WKNavigationDelegate
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        title = webView.title
+        textField.text = webView.url?.absoluteString ?? ""
     }
 }
