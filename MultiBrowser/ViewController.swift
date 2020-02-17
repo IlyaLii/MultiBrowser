@@ -106,4 +106,12 @@ extension ViewController: WKNavigationDelegate, UITextFieldDelegate, UIGestureRe
         title = webView.title
         textField.text = webView.url?.absoluteString ?? ""
     }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        if traitCollection.horizontalSizeClass == .compact {
+            stackView.axis = .vertical
+        } else {
+            stackView.axis = .horizontal
+        }
+    }
 }
